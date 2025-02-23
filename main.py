@@ -1,18 +1,45 @@
 import pyautogui
 import cv2
 import numpy as np
-region_screenshot = pyautogui.screenshot(region=(564, 182, 342, 606))
-full = pyautogui.screenshot()
-full.save("screenshot.png")
-image = np.array(region_screenshot)
-image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+import time
+import keyboard
 
-line1 = reversed(gray_image[42,0:606])
 
-for y, pixel in enumerate(line1):
-    if pixel == 0:  # Black pixel check
-        print(f"Black pixel found at: ({606}, {y + 129-80})")
-        
+# Constants
+x_coord = 606
+y_start, y_end = 320, 735
+black_threshold = 10
+fps = 60
+latime = 86
 
-cv2.imwrite("grayscale_screenshot.png", gray_image)
+pyautogui.PAUSE = 0  # Removes built-in delay
+
+
+
+
+keyboard.wait("s")
+running = True
+while running:
+    if keyboard.is_pressed("q"):
+        print("Emergency stop triggered. ")
+        keyboard.wait("s")
+
+    screenshot = pyautogui.screenshot()
+    image = np.array(screenshot)
+    image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+
+
+    for i in range(4):
+        line = image[y_start:y_end, x_coord+latime*i]
+        for y_offset in range(len(line) - 1, -1, -1): 
+            pixel = line[y_offset]
+            if np.all(pixel < black_threshold):  
+                real_y = y_start + y_offset
+                pyautogui.moveTo(x_coord+latime*i, real_y-70)
+                pyautogui.mouseDown()
+                time.sleep(0.01) 
+                pyautogui.mouseUp()
+                print(f"Clicked at ({x_coord+latime*i}, {real_y-70})")
+                break
+
+
